@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-a9d567d23c492524f37da2c30ab16ac496e19cd8",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/CertificateRegistry.sol": "project/contracts/CertificateRegistry.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/CertificateRegistry.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\ncontract CertificateRegistry {\r\n    mapping(bytes32 => bool) public certificateHashes;\r\n\r\n    event CertificateStored(bytes32 indexed hash, address indexed submitter);\r\n\r\n    // Store certificate hash on the blockchain\r\n    function storeHash(bytes32 hash) public {\r\n        require(!certificateHashes[hash], \"Certificate already stored\");\r\n        certificateHashes[hash] = true;\r\n        emit CertificateStored(hash, msg.sender);\r\n    }\r\n\r\n    // Verify if a given certificate hash exists\r\n    function verifyHash(bytes32 hash) public view returns (bool) {\r\n        return certificateHashes[hash];\r\n    }\r\n}"
+      }
+    }
+  }
+}

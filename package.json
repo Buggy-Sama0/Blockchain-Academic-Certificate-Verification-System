@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.3",
+    "dotenv": "^17.3.1",
+    "hardhat": "^3.1.12"
+  },
+  "type": "module"
+}
