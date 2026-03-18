@@ -3,4 +3,4 @@ artifacts/
 cache/
 .env
 .env.example
-.test/CertificateRegistry.soll
+test/CertificateRegistry.soll
