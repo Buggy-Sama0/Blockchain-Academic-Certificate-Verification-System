@@ -31,7 +31,7 @@ Proceed with the rest of the setup or development as required.
 ---
 ### Running your test
 To run all the tests in a Hardhat project, you can run:
-    ```bash
+```bash
     npm hardhat test
     ```
 
