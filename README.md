@@ -25,3 +25,60 @@ Follow these steps to set up dependencies for both the contract and frontend por
 
 ---
 Proceed with the rest of the setup or development as required.
+
+---
+
+## Setting up a Hardhat Project
+
+Before you start, ensure you have **Node.js 22+** and a package manager like **npm** or **pnpm** installed.
+
+### Creating your Project
+
+1. In an empty directory, initialize Hardhat:
+    ```sh
+    npx hardhat --init
+    ```
+    - **Version:** `Hardhat 3 Beta`
+    - **Directory:** current (`.`)
+    - **Project type:** ✔️ _A minimal Hardhat project_ **(select this, not the default)**
+    - **Install dependencies:** ✔️ Yes (recommended)
+
+### Deploying to Sepolia Testnet
+
+1. **Get Sepolia RPC credentials:**
+    - [Alchemy](https://www.alchemy.com/) or similar services can provide a Sepolia RPC URL and you can use their faucet to get Sepolia ETH.
+
+2. **Update your Hardhat config (`hardhat.config.ts`):**
+    ```typescript
+    import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
+    import { defineConfig } from "hardhat/config";
+
+    export default defineConfig({
+      plugins: [hardhatToolboxViemPlugin],
+      solidity: {
+        version: "0.8.28",
+      },
+      networks: {
+        sepolia: {
+          type: "http",
+          url: "<SEPOLIA_RPC_URL>",
+          accounts: ["<SEPOLIA_PRIVATE_KEY>"],
+        },
+      },
+    });
+    ```
+    **Replace** `<SEPOLIA_RPC_URL>` and `<SEPOLIA_PRIVATE_KEY>` with your own values.  
+    _Note: Keeping private keys in config files is a security risk—this is for learning/demo only!_
+
+3. **Deploy the contract:**
+    ```sh
+    npx hardhat ignition deploy ignition/modules/Counter.ts --network sepolia
+    ```
+
+    - If deployment succeeds, you’ll see the deployed contract address in the output.
+    - You can then view it on [Sepolia Etherscan](https://sepolia.etherscan.io/).
+
+---
+
+> **Next Steps:**  
+> To keep private keys and RPC URLs secure, move secrets to environment variables. See [Hardhat docs](https://hardhat.org/) for details.
