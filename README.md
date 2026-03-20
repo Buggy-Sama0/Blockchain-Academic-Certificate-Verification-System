@@ -4,7 +4,7 @@
 
 Follow these steps to set up dependencies for both the contract and frontend portions of the project:
 
-Before you start, ensure you have **Node.js 22+** and a package manager like **npm** or **pnpm** installed.
+Before you start, ensure you have **Node.js 22+** and a package manager like **npm** installed.
 
 ### 1. Contract Dependencies
 
