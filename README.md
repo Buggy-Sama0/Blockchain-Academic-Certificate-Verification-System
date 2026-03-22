@@ -64,7 +64,7 @@ npm hardhat test
 
 3. **Deploy the contract:**
     ```sh
-    npx hardhat ignition deploy ignition/modules/Counter.ts --network sepolia
+    npx hardhat ignition deploy ignition/modules/CertificateRegistry.js --network sepolia
     ```
 
     - If deployment succeeds, you’ll see the deployed contract address in the output.
