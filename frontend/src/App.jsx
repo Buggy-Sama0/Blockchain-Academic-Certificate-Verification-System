@@ -30,7 +30,7 @@ function App() {
   const [allCertificates, seAllCertificates] = useState(null);
   const [isIssuer, setIsIssuer] = useState(false);
 
-  const contractAddress = "0x9EA5b19142953d89e5c6D81Ce5A1808136b2DD18"
+  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
   const [form, setForm] = useState({
     name: "",
