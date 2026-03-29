@@ -29,6 +29,7 @@ function App() {
   const [userMessage, setUserMessage] = useState("");
   const [allCertificates, seAllCertificates] = useState(null);
   const [isIssuer, setIsIssuer] = useState(false);
+  const [account, setAccount] = useState("");
 
   const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
@@ -89,14 +90,21 @@ function App() {
   useEffect(() => {
     if (!window.ethereum) return;
     let ignore = false;
-    async function handleAccountsChanged() {
+    async function handleAccountsChanged(accounts) {
       if (ignore) return;
-      await checkIssuerRole();
+      if (accounts && accounts.length > 0) {
+        setAccount(accounts[0]);
+        await checkIssuerRole();
+      } else {
+        setAccount("");
+        setIsIssuer(false);
+      }
     }
     window.ethereum.on && window.ethereum.on('accountsChanged', handleAccountsChanged);
     // Optionally, check role after first user interaction (e.g., after connect)
     window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
       if (accounts && accounts.length > 0) {
+        setAccount(accounts[0]);
         checkIssuerRole();
       }
     });
@@ -266,43 +274,85 @@ function App() {
   }
 
 
+  async function connectWallet() {
+    if (!window.ethereum) {
+      setUserMessage("MetaMask not detected");
+      return;
+    }
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts && accounts.length > 0) {
+        setAccount(accounts[0]);
+        await checkIssuerRole();
+      }
+    } catch (err) {
+      console.error(err);
+      setUserMessage("Failed to connect wallet.");
+    }
+  }
+
   return (
     <>
       <div>
         <h1>Blockchain Academic Certificate</h1>
+        
+        {/* Wallet Connection Status */}
+        <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '8px' }}>
+          {account ? (
+            <p style={{ margin: 0 }}>
+              <b>Connected:</b> {account.substring(0,6)}...{account.substring(38)} 
+              <span style={{ marginLeft: '10px', color: isIssuer ? 'green' : 'gray' }}>
+                ({isIssuer ? "Issuer Role" : "Employer/Verifer Role"})
+              </span>
+            </p>
+          ) : (
+            <button onClick={connectWallet} style={{ backgroundColor: '#ff9800', color: '#fff', border: 'none', padding: '10px 15px', borderRadius: '5px', cursor: 'pointer' }}>
+              Connect MetaMask
+            </button>
+          )}
+        </div>
+
         <h3>File Upload</h3>
         {userMessage && <div className="user-message">{userMessage}</div>}
         {isIssuer ? (
           <>
             <div>
-              <input type="file" onChange={onFileChange} />
-              <button onClick={onFileUpload}>Upload!</button>
-              <button onClick={onVerify} disabled={!selectedFile}>Verify</button>
-              <button onClick={onViewDetails} disabled={!selectedFile}>View Details</button>
-            </div>
-            {selectedFile && (
-              <div>
-                <p>Name: {selectedFile.name}</p>
-                <p>Type: {selectedFile.type || "Unknown"}</p>
-                <p>Size: {selectedFile.size} bytes</p>
-                <label>
-                  Name:
+              <input type="file" onChange={onFileChange} style={{ marginBottom: "15px" }} />
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", margin: "15px 0", maxWidth: "300px", marginInline: "auto" }}>
+                <label style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
+                  Student Name:
                   <input
                     type="text"
                     value={form.name}
                     onChange={e => setForm({...form, name: e.target.value})}
                     required
+                    style={{ padding: "8px", marginTop: "5px" }}
+                    placeholder="Enter student's name"
                   />
                 </label>
-                <label>
-                  Degree:
+                <label style={{ display: "flex", flexDirection: "column", textAlign: "left" }}>
+                  Degree Title:
                   <input
                     type="text"
                     value={form.degree}
                     onChange={e => setForm({...form, degree: e.target.value})}
                     required
+                    style={{ padding: "8px", marginTop: "5px" }}
+                    placeholder="e.g. B.S. Computer Science"
                   />
                 </label>
+              </div>
+
+              <div>
+                <button onClick={onFileUpload}>Upload!</button>
+                <button onClick={onVerify} disabled={!selectedFile}>Verify</button>
+                <button onClick={onViewDetails} disabled={!selectedFile}>View Details</button>
+              </div>
+            </div>
+            {selectedFile && (
+              <div style={{ marginTop: "20px", color: "#aaa" }}>
+                <p>Selected File: {selectedFile.name} ({selectedFile.size} bytes)</p>
               </div>
             )}
           </>
