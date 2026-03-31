@@ -77,6 +77,10 @@ npx hardhat test
 There are total of 20 accounts in Account.txt, only Account#0 is Issuer role, others are all Employer.
 You will need to import atleast two account to your MetaMask wallet inorder to test it.
 
+Add this custom network to your MetaMask.
+
+<img width="392" height="949" alt="image" src="https://github.com/user-attachments/assets/22a3d53d-66af-411c-b5ed-a6ea88a6e8e0" />
+
 ### 1.Import Account
 1. Copy the private key in Account.txt, Account#0 is a must. Feel free to try Account#1-19.
 2. Go to your MetaMask wallet, Add waller -> paste the private key
