@@ -14,6 +14,9 @@ echo.
 echo ===============================================
 echo 2. Deploying Smart Contract...
 echo ===============================================
+:: Wipe old cache to force a fresh deployment
+if exist "ignition\deployments\chain-31337" rd /s /q "ignition\deployments\chain-31337"
+
 :: Deploy the contract to that local node
 call npx.cmd hardhat ignition deploy ignition/modules/CertificateRegistry.js --network localhost
 
