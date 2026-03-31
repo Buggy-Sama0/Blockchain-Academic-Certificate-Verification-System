@@ -4,7 +4,7 @@ TITLE Blockchain Certificate Project Setup
 echo ===============================================
 echo 1. Starting Local Hardhat Node...
 echo ===============================================
-:: Start the Hardhat node in a completely separate window so it runs in the background
+:: Start the Hardhat node strictly on localhost
 start "Hardhat Node Server" cmd /k "npx.cmd hardhat node"
 
 :: Give the blockchain plenty of time to start
@@ -25,10 +25,10 @@ echo ====================================================================
 echo.
 
 echo ===============================================
-echo 3. Starting React Frontend (Network Hosted)...
+echo 3. Starting React Frontend (Localhost only)...
 echo ===============================================
-:: Start the frontend server, change directory properly, and run Vite
-start "React Frontend" cmd /k "cd frontend && call npm.cmd run dev -- --host"
+:: Start the frontend server strictly on localhost
+start "React Frontend" cmd /k "cd frontend && call npm.cmd run dev"
 
 :: Give Vite enough time to compile and start serving
 echo Waiting for the Vite web server to boot up (5 seconds)...
