@@ -66,9 +66,33 @@ export default function App() {
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
+    
+    // Reset states so previous checks disappear immediately
+    setSelectedFile(null);
+    setFileHash("");
+    setStatus({ type: '', message: '' });
+    setCertDetails(null);
+
     if (!file) return;
-    setSelectedFile(file);
-    setStatus({ type: 'loading', message: 'Computing file hash...' });
+
+    // Fix: Block unsupported extensions
+    if (!file.type.match(/(pdf|jpeg|png|jpg)$/i)) {
+      setStatus({ type: 'error', message: 'Error: Only PDF, JPG, and PNG files are allowed' });
+      return;
+    }
+
+    // Fix: Block empty files
+    if (file.size === 0) {
+      setStatus({ type: 'error', message: 'Error: Cannot upload empty (0 byte) file' });
+      return;
+    }
+
+    // Fix: Size limitation (e.g. 5MB)
+    if (file.size > 5000000) {
+      setStatus({ type: 'error', message: 'Error: File must be smaller than 5MB' });
+      return;
+    }
+
     
     try {
       const buffer = await file.arrayBuffer();
@@ -81,11 +105,20 @@ export default function App() {
   };
 
   const handleUpload = async () => {
-    if (!fileHash || !form.name || !form.degree) {
-      setStatus({ type: 'error', message: 'Please fill in all information and upload the file' });
+    // Basic checks for empty spaces
+    if (!fileHash || !form.name.trim() || !form.degree.trim()) {
+      setStatus({ type: 'error', message: 'Please fill in all information and upload a valid file' });
       return;
     }
-    
+
+    // Advanced Regex for special characters (only allow letters, numbers, spaces, dots, commas, dashes)
+    const isValidName = /^[a-zA-Z0-9\s.,'-]+$/.test(form.name.trim());
+    const isValidDegree = /^[a-zA-Z0-9\s.,'-]+$/.test(form.degree.trim());
+    if (!isValidName || !isValidDegree) {
+      setStatus({ type: 'error', message: 'Error: Name and Degree cannot contain special characters' });
+      return;
+    }
+
     try {
       setStatus({ type: 'loading', message: 'Submitting transaction...' });
       const provider = new ethers.BrowserProvider(window.ethereum);
@@ -153,7 +186,7 @@ export default function App() {
           <div style={styles.card}>
             <h3 style={styles.cardTitle}>File Operations</h3>
             <div style={styles.fileDropArea}>
-              <input type="file" onChange={handleFileChange} style={styles.fileInput} id="file-upload"/>
+              <input type="file" accept=".pdf,.jpeg,.jpg,.png" onChange={handleFileChange} style={styles.fileInput} id="file-upload"/>
               <label htmlFor="file-upload" style={styles.fileLabel}>
                 {selectedFile ? `Selected: ${selectedFile.name}` : "Drag & drop or click to upload certificate"}
               </label>

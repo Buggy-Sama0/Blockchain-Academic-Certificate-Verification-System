@@ -4,7 +4,8 @@ import "dotenv/config";
 
 const sepoliaPrivateKey = process.env.SEPOLIA_PRIVATE_KEY ?? "";
 const sepoliaRpcUrl = process.env.SEPOLIA_RPC_URL ?? "";
-const hasSepoliaConfig = sepoliaRpcUrl.length > 0 && sepoliaPrivateKey.length > 0;
+// Only activate Sepolia if the private key looks like a real 64-char hex key (so it ignores the dummy text)
+const hasSepoliaConfig = sepoliaRpcUrl.length > 0 && sepoliaPrivateKey.length >= 64;
 
 export default defineConfig({
   plugins: [hardhatToolboxMochaEthers],
