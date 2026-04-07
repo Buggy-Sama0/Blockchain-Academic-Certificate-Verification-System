@@ -280,7 +280,7 @@ const styles = {
   subtitle: { fontSize: '14px', color: '#6b7280' },
   walletSection: { display: 'flex', justifyContent: 'center', marginBottom: '20px' },
   connectBtn: { backgroundColor: '#1a56db', color: '#fff', padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold' },
-  accountText: { fontSize: '14px', fontWeight: 'bold', color: '#111827', display: 'flex', alignItems: 'center', gap: '8px' },
+  accountText: { fontSize: '14px', fontWeight: 'bold', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '8px' },
   dotConnected: { width: '10px', height: '10px', backgroundColor: '#10b981', borderRadius: '50%' },
   mainGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' },
   card: { backgroundColor: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb' },
