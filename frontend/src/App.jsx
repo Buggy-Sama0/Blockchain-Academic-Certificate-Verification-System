@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 
+// ABI (Application Binary Interface) - Defines the methods available in our Smart Contract for the frontend to call
 const CONTRACT_ABI = [
   "function storeCertificate(bytes32 _hash, string memory name, string memory _degree) public",
   "function verifyHash(bytes32 _hash) public view returns (bool)",
@@ -9,21 +10,35 @@ const CONTRACT_ABI = [
   "function hasRole(bytes32 role, address account) public view returns (bool)"
 ];
 
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f642f642f642f";
+// The deployed address of our contract on the Hardhat Local Node
+const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 export default function App() {
-  const [account, setAccount] = useState("");
-  const [isIssuer, setIsIssuer] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [fileHash, setFileHash] = useState("");
-  const [form, setForm] = useState({ name: "", degree: "" });
-  const [status, setStatus] = useState({ type: "", message: "" });
-  const [certDetails, setCertDetails] = useState(null);
 
-  useEffect(() => {
-    checkWalletConnection();
-  }, []);
+  // Application State Management
+  const [account, setAccount] = useState("");          // Current user's wallet address
+  const [isIssuer, setIsIssuer] = useState(false);      // Boolean to check if user has Admin/Issuer rights
+  const [selectedFile, setSelectedFile] = useState(null); // The actual certificate file selected
+  const [fileHash, setFileHash] = useState("");         // The SHA-256 (Keccak) hash of the file
+  const [form, setForm] = useState({ name: "", degree: "" }); // Form data for metadata
+  const [status, setStatus] = useState({ type: "", message: "" }); // Status messages for UI
+  const [certDetails, setCertDetails] = useState(null); // Data retrieved from blockchain during verification
 
+  // Checks if the connected wallet address has the "ISSUER_ROLE" assigned in the Smart Contract
+  const checkIssuerRole = async (addr) => {
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+      const role = await contract.ISSUER_ROLE(); // Get the hash identifier for ISSUER_ROLE
+      const is_issuer = await contract.hasRole(role, addr); // Query contract for role status
+      setIsIssuer(is_issuer);
+    } catch (error) {
+      console.error("Role check failed", error);
+    }
+  };
+  
+
+  // Automatically check if the user is already logged into MetaMask on page load
   const checkWalletConnection = async () => {
     if (window.ethereum) {
       try {
@@ -38,13 +53,20 @@ export default function App() {
     }
   };
 
+  // React hook that runs once when the component mounts (page loads)
+  useEffect(() => {
+    checkWalletConnection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Request a connection to the user's MetaMask wallet
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         setAccount(accounts[0]);
         checkIssuerRole(accounts[0]);
-      } catch (error) {
+      } catch {
         setStatus({ type: 'error', message: 'Failed to connect wallet' });
       }
     } else {
@@ -52,22 +74,13 @@ export default function App() {
     }
   };
 
-  const checkIssuerRole = async (addr) => {
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-      const role = await contract.ISSUER_ROLE();
-      const is_issuer = await contract.hasRole(role, addr);
-      setIsIssuer(is_issuer);
-    } catch (error) {
-      console.error("Role check failed", error);
-    }
-  };
 
+
+  // Handles file selection and generates a unique cryptographic hash (digital fingerprint)
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     
-    // Reset states so previous checks disappear immediately
+    // Clear previous verification/upload results when a new file is picked
     setSelectedFile(null);
     setFileHash("");
     setStatus({ type: '', message: '' });
@@ -75,19 +88,19 @@ export default function App() {
 
     if (!file) return;
 
-    // Fix: Block unsupported extensions
+    // Security Check: Block unsupported file extensions
     if (!file.type.match(/(pdf|jpeg|png|jpg)$/i)) {
       setStatus({ type: 'error', message: 'Error: Only PDF, JPG, and PNG files are allowed' });
       return;
     }
 
-    // Fix: Block empty files
+    // Integrity Check: Block empty (0 byte) files
     if (file.size === 0) {
       setStatus({ type: 'error', message: 'Error: Cannot upload empty (0 byte) file' });
       return;
     }
 
-    // Fix: Size limitation (e.g. 5MB)
+    // Performance/Cost Check: Limit file size to 5MB
     if (file.size > 5000000) {
       setStatus({ type: 'error', message: 'Error: File must be smaller than 5MB' });
       return;
@@ -95,23 +108,25 @@ export default function App() {
 
     
     try {
+      // Read file content as raw bytes and compute the Keccak256 hash locally
       const buffer = await file.arrayBuffer();
       const hash = ethers.keccak256(new Uint8Array(buffer));
       setFileHash(hash);
       setStatus({ type: 'success', message: 'File hash computed successfully!' });
-    } catch (error) {
+    } catch {
       setStatus({ type: 'error', message: 'File processing failed' });
     }
   };
 
+  // Submits the certificate hash and metadata to the blockchain (Restricted to Issuers)
   const handleUpload = async () => {
-    // Basic checks for empty spaces
+    // Basic validation for required fields
     if (!fileHash || !form.name.trim() || !form.degree.trim()) {
       setStatus({ type: 'error', message: 'Please fill in all information and upload a valid file' });
       return;
     }
 
-    // Advanced Regex for special characters (only allow letters, numbers, spaces, dots, commas, dashes)
+    // Input Sanitization: Only allow standard characters, numbers, and basic punctuation
     const isValidName = /^[a-zA-Z0-9\s.,'-]+$/.test(form.name.trim());
     const isValidDegree = /^[a-zA-Z0-9\s.,'-]+$/.test(form.degree.trim());
     if (!isValidName || !isValidDegree) {
@@ -122,18 +137,20 @@ export default function App() {
     try {
       setStatus({ type: 'loading', message: 'Submitting transaction...' });
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
+      const signer = await provider.getSigner(); // Requires a "Signer" to execute write operations (gas fees)
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
       
+      // Execute the smart contract function to store data on-chain
       const tx = await contract.storeCertificate(fileHash, form.name, form.degree);
       setStatus({ type: 'loading', message: 'Transaction sent, waiting for confirmation...' });
-      await tx.wait();
+      await tx.wait(); // Wait for the Ethereum network to mine the block
       setStatus({ type: 'success', message: 'Certificate stored successfully on blockchain!' });
     } catch (error) {
       setStatus({ type: 'error', message: 'Upload failed:' + (error.reason || error.message) });
     }
   };
 
+  // Verifies the authenticity of a file by comparing its hash against blockchain records
   const handleVerify = async () => {
     if (!fileHash) {
       setStatus({ type: 'error', message: 'Please select a file' });
@@ -145,21 +162,23 @@ export default function App() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
       
+      // Query the contract to see if this specific hash exists in its storage mapping
       const isValid = await contract.verifyHash(fileHash);
       if (isValid) {
+        // If valid, retrieve the actual metadata (Student Name, Degree, Date) stored alongside the hash
         const details = await contract.certificates(fileHash);
         setCertDetails({
           hash: details.hash,
           studentName: details.studentName,
           degree: details.degree,
-          timestamp: new Date(Number(details.timestamp) * 1000).toLocaleString()
+          timestamp: new Date(Number(details.timestamp) * 1000).toLocaleString() // Format Unix timestamp
         });
         setStatus({ type: 'success', message: 'Certificate verified successfully!' });
       } else {
         setCertDetails(null);
         setStatus({ type: 'error', message: 'No matching certificate record found' });
       }
-    } catch (error) {
+    } catch {
       setStatus({ type: 'error', message: 'Verification failed' });
     }
   };

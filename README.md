@@ -1,6 +1,16 @@
-# Blockchain-Academic-Certificate-Verification-System
+# Blockchain Academic Certificate Verification System
 
-## Installation Steps
+## Introduction
+The **Blockchain Academic Certificate Verification System** is a decentralized application (dApp) designed to combat credential fraud and streamline the verification process for academic achievements. By leveraging blockchain technology, the system provides:
+
+*   **Tamper-proof Records**: Once a certificate's digital fingerprint (hash) is stored on the blockchain, it cannot be altered or deleted.
+*   **Role-Based Access**: Specialized `ISSUER_ROLE` ensures only authorized institutions (like Universities) can register new certificates.
+*   **Instant Verification**: Employers can verify any certificate in seconds by simply uploading the file; the system compares the file's hash against the blockchain's immutable ledger.
+*   **Privacy-First Design**: Only the file hash and basic metadata (Name, Degree) are stored on-chain, keeping the actual sensitive documents off the public ledger.
+
+---
+
+## Installation Steps (Manual Setup)
 
 Follow these steps to set up dependencies for both the contract and frontend portions of the project:
 
